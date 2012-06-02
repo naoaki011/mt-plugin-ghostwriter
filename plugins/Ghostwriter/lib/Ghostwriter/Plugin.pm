@@ -208,9 +208,10 @@ sub _create_popup_interface {
     # Create the author widget display name and "change author" content.
     $inner_html .= '<div style="padding-top: 2px;">' # 2px aligns horizontally
         . '<span id="current_author_display_name" style="padding-right: 5px;">' 
-        . $current_author->nickname . '</span>'
+        . $current_author->nickname . '</span>';
 
-        . ' (<a href="javascript:void(0)" onclick="return '
+    if (MT->version_number < 5) {
+        $inner_html .= ' (<a href="javascript:void(0)" onclick="return '
             . "openDialog(false, 'ghostwriter_pick_author', "
             . "'blog_id=<mt:BlogID>&amp;idfield=new_author_id&amp;"
             . "namefield=current_author_display_name&amp;"
@@ -218,6 +219,14 @@ sub _create_popup_interface {
             . " + document.getElementById('current_author_display_name').innerHTML )" 
         . '">change&nbsp;author</a>)' # Don't break across lines
         . '</div>';
+    } else {
+        $inner_html .= ' (<a href="mt.cgi?__mode=ghostwriter_pick_author&amp;'
+            . 'blog_id=<mt:BlogID>&amp;idfield=new_author_id&amp;'
+            . 'namefield=current_author_display_name&amp;'
+            . 'cur_author_display_name=' . $current_author->nickname
+        . '" class="mt-open-dialog">change&nbsp;author</a>)' # Don't break across lines
+        . '</div>';
+    }
 
     $created_by->innerHTML( $inner_html );
     $template->insertBefore($created_by, $position);
@@ -226,7 +235,7 @@ sub _create_popup_interface {
 # This is the popup window that a user can pick an author from.
 sub popup_select_author {
     my $app  = shift;
-    my $q      = $app->query;
+    my $q      = $app->can('query') ? $app->query : $app->param;
     my $param  = {};
     my $plugin = MT->component('ghostwriter');
 
