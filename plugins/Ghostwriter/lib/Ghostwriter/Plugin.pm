@@ -187,7 +187,9 @@ sub _create_popup_interface {
     my $current_author = $app->user;
     if (my $entry_id = $params->{id}) {
         my $entry = MT->model('entry')->load($entry_id);
-        $current_author = $entry->author if $entry;
+        my $author;
+        $author = MT->model('author')->load( $entry->author_id ) if $entry;
+        $current_author = $entry->author if ($entry && $author);
     }
 
     my $position = $template->getElementById( $options->{position} );
